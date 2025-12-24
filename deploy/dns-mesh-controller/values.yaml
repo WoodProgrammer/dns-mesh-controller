@@ -1,0 +1,34 @@
+replicaCount: 1
+
+image:
+  repository: docker.io/emirozbir/dns-mesh-controller
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+service:
+  type: ClusterIP
+  port: 8443
+  apiPort: 5959
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
