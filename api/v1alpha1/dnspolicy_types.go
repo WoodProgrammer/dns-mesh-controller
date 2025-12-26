@@ -37,6 +37,12 @@ type DnsPolicySpec struct {
 	// BlockList contains domain patterns that are blocked from DNS resolution.
 	// +optional
 	BlockList []string `json:"blockList,omitempty"`
+
+	// Interval specifies the config fetch period
+	// Interval should be integer.
+	// +optional
+	// +kubebuilder:default=30
+	Interval int `json:"interval,omitempty"`
 }
 
 // DnsPolicyStatus defines the observed state of DnsPolicy.

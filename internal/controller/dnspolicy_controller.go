@@ -32,7 +32,8 @@ import (
 )
 
 const (
-	dnsPolicyFinalizer = "dns.dnspolicies.io/finalizer"
+	dnsPolicyFinalizer                 = "dns.dnspolicies.io/finalizer"
+	DEFAULT_TIME_INTERVAL_CONFIG_FETCH = 30
 )
 
 // DnsPolicyReconciler reconciles a DnsPolicy object
@@ -66,6 +67,17 @@ func (r *DnsPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		log.Error(err, "Failed to get DnsPolicy")
 		return ctrl.Result{}, err
 	}
+	fmt.Println(policy.Spec.Interval)
+
+	if policy.Spec.Interval == 0 {
+		policy.Spec.Interval = DEFAULT_TIME_INTERVAL_CONFIG_FETCH
+		if err := r.Update(ctx, &policy); err != nil {
+			log.Error(err, "Failed to set default interval")
+			return ctrl.Result{}, err
+		}
+		log.Info("Set default interval", "interval",
+			policy.Spec.Interval)
+	}
 
 	// Handle deletion with finalizer
 	if !policy.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -94,7 +106,6 @@ func (r *DnsPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, nil
 	}
 
-	// Validate targetSelector is not empty
 	if len(policy.Spec.TargetSelector) == 0 {
 		err := fmt.Errorf("targetSelector cannot be empty")
 		log.Error(err, "Invalid DnsPolicy spec")
@@ -102,7 +113,6 @@ func (r *DnsPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
-	// Compute selector hash
 	selectorHash, err := ComputeSelectorHash(policy.Spec.TargetSelector)
 	if err != nil {
 		log.Error(err, "Failed to compute selector hash")

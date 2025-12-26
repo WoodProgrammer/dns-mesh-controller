@@ -51,6 +51,12 @@ spec:
                 items:
                   type: string
                 type: array
+              interval:
+                default: 30
+                description: |-
+                  Interval specifies the config fetch period
+                  Interval should be integer.
+                type: integer
               targetSelector:
                 additionalProperties:
                   type: string
