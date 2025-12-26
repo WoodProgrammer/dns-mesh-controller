@@ -67,7 +67,6 @@ func (r *DnsPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		log.Error(err, "Failed to get DnsPolicy")
 		return ctrl.Result{}, err
 	}
-	fmt.Println(policy.Spec.Interval)
 
 	if policy.Spec.Interval == 0 {
 		policy.Spec.Interval = DEFAULT_TIME_INTERVAL_CONFIG_FETCH
