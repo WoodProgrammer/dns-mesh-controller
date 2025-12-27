@@ -37,6 +37,8 @@ type DnsPolicySpec struct {
 	// BlockList contains domain patterns that are blocked from DNS resolution.
 	// +optional
 	BlockList []string `json:"blockList,omitempty"`
+
+	Subject map[string]string `json:"subject,omitempty"`
 }
 
 // DnsPolicyStatus defines the observed state of DnsPolicy.

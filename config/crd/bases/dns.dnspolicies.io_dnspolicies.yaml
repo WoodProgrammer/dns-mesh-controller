@@ -51,6 +51,10 @@ spec:
                 items:
                   type: string
                 type: array
+              subject:
+                additionalProperties:
+                  type: string
+                type: object
               targetSelector:
                 additionalProperties:
                   type: string
