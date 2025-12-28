@@ -51,6 +51,8 @@ spec:
                 items:
                   type: string
                 type: array
+              dryrun:
+                type: boolean
               subject:
                 additionalProperties:
                   type: string

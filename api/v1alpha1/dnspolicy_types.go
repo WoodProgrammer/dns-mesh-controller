@@ -39,6 +39,8 @@ type DnsPolicySpec struct {
 	BlockList []string `json:"blockList,omitempty"`
 
 	Subject map[string]string `json:"subject,omitempty"`
+	// +optional
+	DryRun bool `json:"dryrun,omitempty"`
 }
 
 // DnsPolicyStatus defines the observed state of DnsPolicy.
