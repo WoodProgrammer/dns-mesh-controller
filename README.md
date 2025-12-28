@@ -9,9 +9,10 @@ DNS Mesh Controller is a Kubernetes operator that provides fine-grained DNS poli
 The DNS Mesh Controller automatically injects a sidecar DNS container into your pods using a mutating webhook. This sidecar acts as a local DNS proxy that enforces DNS policies defined through Kubernetes CRDs, allowing you to:
 
 - **Control DNS Resolution**: Define allow and block lists for DNS queries
-- **Selective Policy Application**: Target specific pods using label selectors
+- **Selective Policy Application**: Target specific pods using label selectors or service accounts
 - **Zero-Touch Integration**: Automatic sidecar injection without modifying pod specifications
 - **Dynamic Policy Updates**: Update DNS policies without restarting pods
+- **Dryrun Mode**: Test policies and monitor DNS usage without enforcing restrictions
 
 ## Architecture
 
@@ -122,7 +123,11 @@ spec:
 EOF
 ```
 
-### Target Selector
+### Policy Targeting
+
+The DNS Mesh Controller supports two methods for targeting which pods should have policies applied:
+
+#### Label-Based Targeting (targetSelector)
 
 The `targetSelector` field uses label selectors to determine which pods should have the policy applied:
 
@@ -134,6 +139,52 @@ spec:
 ```
 
 Only pods with matching labels will receive the DNS sidecar injection and policy enforcement.
+
+#### ServiceAccount-Based Targeting (subject)
+
+Target pods based on their ServiceAccount for identity-based policy management:
+
+```yaml
+spec:
+  subject:
+    serviceAccount: my-service-account
+```
+
+This approach provides more granular control by leveraging Kubernetes identity and is particularly useful for:
+- Enforcing policies based on workload identity
+- Integrating with RBAC and service mesh patterns
+- Managing policies across multiple deployments sharing the same identity
+
+### Dryrun Mode
+
+Test your DNS policies without enforcing restrictions using dryrun mode. This is useful for:
+- Understanding DNS usage patterns before enforcement
+- Validating policy configurations in production
+- Debugging DNS resolution issues
+
+Enable dryrun mode in your policy:
+
+```yaml
+apiVersion: dns.dnspolicies.io/v1alpha1
+kind: DnsPolicy
+metadata:
+  name: dnspolicy-dryrun-test
+  namespace: default
+spec:
+  dryrun: true
+  subject:
+    serviceAccount: my-app
+  allowList:
+  - '*.example.com'
+  blockList:
+  - '*.ads.com'
+```
+
+In dryrun mode, the sidecar will log DNS queries that would be blocked but will not actually block them. Check the sidecar logs to see what would be affected:
+
+```bash
+kubectl logs <pod-name> -c dns-sidecar
+```
 
 ### Allow and Block Lists
 
@@ -221,6 +272,34 @@ spec:
   - 'approved-service.com'
   - '*.trusted-partner.io'
 ```
+
+### Identity-Based Policy with Dryrun
+
+Test DNS policies for specific service accounts before enforcement:
+
+```yaml
+apiVersion: dns.dnspolicies.io/v1alpha1
+kind: DnsPolicy
+metadata:
+  name: payment-service-policy
+  namespace: production
+spec:
+  dryrun: true
+  subject:
+    serviceAccount: payment-processor
+  allowList:
+  - '*.payment-gateway.com'
+  - 'bank-api.trusted.io'
+  - '*.internal.company.com'
+  blockList:
+  - '*'  # Block all others (in dryrun, only logs)
+```
+
+This approach allows you to:
+- Test policies on production workloads safely
+- Understand actual DNS usage patterns
+- Validate allow/block lists before enforcement
+- Use Kubernetes identity (ServiceAccount) for fine-grained control
 
 To verify the blocking works fine log messages of sidecar-dns should be like this;
 
